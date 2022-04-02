@@ -20,6 +20,17 @@ extern "C" {
 dashboard_button* db_rtd;
 dashboard_button* db_ts;
 
+/* CALLBACKS */
+void on_rtd_press(){
+	dashboard_button_set_led(db_rtd, LED_ON);
+}
+void on_rtd_release(){
+	dashboard_button_set_led(db_rtd, LED_OFF);
+}
+void on_rtd_hold(){
+	dashboard_button_set_led(db_rtd, LED_STROBE);
+}
+
 /* SETUP */
 void setup() {
 	/* Setup IO */
@@ -27,11 +38,20 @@ void setup() {
 	digitalWrite(PIN_DEBUG, LOW);
 
 	/* Setup buttons */
-	db_rtd = dashboard_button_init(PIN_BUT_RTD_IN, PIN_BUT_RTD_LED);
-	db_ts = dashboard_button_init(PIN_BUT_TS_IN, PIN_BUT_TS_LED);
-
-	/* Test LED */
-	dashboard_button_set_led(db_rtd, LED_BLINK);
+	db_rtd = dashboard_button_init(
+		PIN_BUT_RTD_IN,
+		PIN_BUT_RTD_LED,
+		&on_rtd_press,
+		&on_rtd_release,
+		&on_rtd_hold
+	);
+	db_ts = dashboard_button_init(
+		PIN_BUT_TS_IN,
+		PIN_BUT_TS_LED,
+		NULL,
+		NULL,
+		NULL
+	);
 }
 
 /* LOOP */
