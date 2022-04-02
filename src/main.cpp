@@ -1,9 +1,18 @@
 #include <Arduino.h>
 
+/* Pin Definitions */
+#define PIN_DEBUG 13
+
 void setup() {
-  // put your setup code here, to run once:
+	/* Setup IO */
+	pinMode(PIN_DEBUG, OUTPUT);
+	digitalWrite(PIN_DEBUG, LOW);
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+	/* Blink LED */
+	digitalWrite(PIN_DEBUG, HIGH);
+	delay(500);
+	digitalWrite(PIN_DEBUG, LOW);
+	delay(500);
 }
