@@ -29,7 +29,7 @@ dashboard_button* dashboard_button_init(
 	/* Setup pins */
 	pinMode(db->pin_led, OUTPUT);
 	pinMode(db->pin_input, INPUT);
-	digitalWrite(db->pin_led, LOW);
+	analogWrite(db->pin_led, 0);
 
 	return db;
 }
@@ -46,19 +46,19 @@ void dashboard_button_set_led(dashboard_button* db, led_state_t ls){
 
 void dashboard_button_update(dashboard_button* db){
 	/* Update LED */
-	unsigned char time;
+	uint16_t time;
 	switch(db->led_state){
 		case LED_OFF:
-			digitalWrite(db->pin_led, LOW);
+			analogWrite(db->pin_led, 0);
 			break;
 		case LED_ON:
-			digitalWrite(db->pin_led, HIGH);
+			analogWrite(db->pin_led, 255);
 			break;
 		case LED_BLINK:
-			digitalWrite(db->pin_led, millis() % 1000 < 500);
+			analogWrite(db->pin_led, (millis() % 1000 < 500) * 255);
 			break;
 		case LED_STROBE:
-			digitalWrite(db->pin_led, millis() % 200 < 100);
+			analogWrite(db->pin_led, (millis() % 200 < 100) * 255);
 			break;
 		case LED_BREATHE:
 			time = (millis() % 512);
@@ -80,8 +80,8 @@ void dashboard_button_update(dashboard_button* db){
 			/* Was already pressed */
 			if(!was_hold && millis() - db->millis_start_press > DB_HOLD_TIME){	
 				/* Hold */
+				db->millis_start_hold = millis();
 				if(db->on_hold != NULL) db->on_hold();
-				db->on_hold();
 			}
 		}else{
 			/* First pressed */
