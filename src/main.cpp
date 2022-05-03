@@ -23,7 +23,6 @@ extern "C" {
 /* Declare vars */
 dashboard_button* db_rtd;
 dashboard_button* db_ts;
-FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> can;
 
 /* CALLBACKS */
 void on_rtd_press(){
@@ -39,29 +38,24 @@ void on_ts_press(){
 	dashboard_button_set_led(db_ts, LED_ON);
 }
 void on_ts_release(){
-	dashboard_button_set_led(db_ts, LED_OFF);
+	dashboard_button_set_led(db_ts, LED_BREATHE);
 }
 void on_ts_hold(){
 	dashboard_button_set_led(db_ts, LED_STROBE);
-
-	/* Send CAN message */
-	CAN_message_t message;
-	message.id = CAN_ID_RTD_PLAY_AUDIO;
-	can.write(message);
 }
 
 /* CAN */
-void on_can_receive(const CAN_message_t& message){
-	/* TODO: Parse message */
+void on_can_receive(){
+
 }
 
 void setup_can(){
-	can.begin();
-	can.setBaudRate(1000000);
-	can.setMaxMB(16);
-	can.enableFIFO();
-	can.enableFIFOInterrupt();
-	can.onReceive(on_can_receive);
+	Can0.begin();
+	Can0.setBaudRate(1000000);
+	Can0.setMaxMB(16);
+	Can0.enableFIFO();
+	Can0.enableFIFOInterrupt();
+	Can0.onReceive(on_can_receive);
 }
 
 /* SETUP */
@@ -94,9 +88,5 @@ void setup() {
 void loop() {
 	/* Check buttons */
 	dashboard_button_update(db_rtd);
-	dashboard_button_update(db_ts);
-
-	/* Update CAN */
-	can.events();
 }
 
