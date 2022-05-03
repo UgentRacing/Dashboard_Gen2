@@ -1,39 +1,15 @@
 #include <Arduino.h>
 #include <FlexCAN_T4.h>
 extern "C" {
+	#include "config.h"
 	#include "slave_led.h"
 	#include "dashboard_button.h"
 }
 
-/* Pin Definitions */
-#define PIN_DEBUG 13
-#define PIN_SL_IND_DATA 2
-#define PIN_SL_IND_DATA_CLOCK 3
-#define PIN_SL_IND_STORAGE_CLOCK 4
-#define PIN_SL_AMI_DATA 5
-#define PIN_SL_AMI_DATA_CLOCK 6
-#define PIN_SL_AMI_STORAGE_CLOCK 7
-#define PIN_SL_OUTPUT_ENABLE 8
-#define PIN_SL_RESET 9
-#define PIN_DB_RTD_IN 17
-#define PIN_DB_RTD_LED 15
-#define PIN_DB_TS_IN 16
-#define PIN_DB_TS_LED 14
-#define PIN_SDC_SDC 18
-#define PIN_SDC_ECU 19
-#define PIN_SDC_AMS 20
-#define PIN_SDC_IMD 21
-#define PIN_GPIO_1 0
-#define PIN_GPIO_2 1
-#define PIN_GPIO_3 10
-#define PIN_GPIO_4 11
-#define PIN_SDC_TS_BTN PIN_GPIO_1 /* Alias */
-#define PIN_BSPD_PRESSURE_1 PIN_GPIO_2 /* Alias */
-#define PIN_BSPD_PRESSURE_2 PIN_GPIO_3 /* Alias */
-#define PIN_BSPD_CURRENT PIN_GPIO_4 /* Alias */
+/* ========== CONFIG ========== */
+/* See file 'include/config.h'! */
+/* ============================ */
 
-/* CAN message IDs */
-#define CAN_ID_RTD_PLAY_AUDIO 2
 
 /* Declare vars */
 dashboard_button* db_rtd; /* RTD button */
@@ -60,6 +36,25 @@ void on_ts_release(){
 }
 void on_ts_hold(){
 	dashboard_button_set_led(db_ts, LED_STROBE);
+}
+
+/* INPUT CHECKS */
+void check_sdc_input(
+	uint8_t pin,
+	uint8_t ind_led,
+	color_t ind_color
+){
+	/* Read value */
+	uint16_t val = analogRead(pin);
+	char state = (val < SDC_THRES);
+
+	/* Change indicator LED */
+	slave_led_set(
+		sl_ind,
+		ind_led,
+		state ? ind_color : COLOR_NONE
+	);
+	slave_led_show();
 }
 
 /* INDICATORS */
@@ -147,6 +142,12 @@ void setup() {
 void loop() {
 	/* Handle CAN messages */
 	can.events();
+
+	/* Check SDC inputs */
+	check_sdc_input(PIN_SDC_SDC, LED_SDC_SDC, COLOR_RED);
+	check_sdc_input(PIN_SDC_ECU, LED_SDC_ECU, COLOR_RED);
+	check_sdc_input(PIN_SDC_AMS, LED_SDC_AMS, COLOR_RED);
+	check_sdc_input(PIN_SDC_IMD, LED_SDC_IMD, COLOR_RED);
 
 	/* Check buttons */
 	dashboard_button_update(db_rtd);

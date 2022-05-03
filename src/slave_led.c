@@ -22,6 +22,7 @@ slave_led* slave_led_init(
 	/* Init internal state */
 	s->color_red = 0b0;
 	s->color_green = 0b0;
+	s->dirty = 0b1;
 
 	/* Init pins */
 	pinMode(s->pin_reset, OUTPUT);
@@ -47,6 +48,7 @@ void slave_led_reset(slave_led* s){
 	/* Reset state */
 	s->color_green = 0b0;
 	s->color_red = 0b0;
+	s->dirty = 0b1;
 
 	/* Low pulse on reset */
 	digitalWrite(s->pin_reset, LOW);
@@ -56,21 +58,33 @@ void slave_led_reset(slave_led* s){
 }
 
 void slave_led_set(slave_led* s, uint8_t led, color_t c){
+	/* Save old state */
+	char old_green = s->color_green;
+	char old_red = s->color_red;
+
 	/* Update internal state */
 	if(c == COLOR_NONE){
 		s->color_red &= ~(0b1 << led);
 		s->color_green &= ~(0b1 << led);
-		return;
+	}else{
+		if(c == COLOR_RED || c == COLOR_YELLOW){
+			s->color_red |= 0b1 << led;
+		}
+		if(c == COLOR_GREEN || c == COLOR_YELLOW){
+			s->color_green |= 0b1 << led;
+		}
 	}
-	if(c == COLOR_RED || c == COLOR_YELLOW){
-		s->color_red |= 0b1 << led;
-	}
-	if(c == COLOR_GREEN || c == COLOR_YELLOW){
-		s->color_green |= 0b1 << led;
+
+	/* Check if changed */
+	if(old_green != s->color_green || old_red != s->color_red){
+		s->dirty = 0b1;
 	}
 }
 
 void slave_led_show(slave_led* s){
+	/* Only update if dirty bit set */
+	if(s->dirty == 0b0) return;
+
 	/* Pull clocks low */
 	digitalWriteFast(s->pin_data_clock, LOW);
 	digitalWriteFast(s->pin_storage_clock, LOW);
@@ -116,5 +130,8 @@ void slave_led_show(slave_led* s){
 	delayNanoseconds(50); /* Wait time pulse high */
 	digitalWriteFast(s->pin_storage_clock, LOW);
 	delayNanoseconds(50); /* Wait time pulse low */
+
+	/* Reset dirty bit */
+	s->dirty = 0b0;
 }
 

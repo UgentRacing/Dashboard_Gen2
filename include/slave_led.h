@@ -20,6 +20,7 @@ typedef struct {
 
 	char color_red;
 	char color_green;
+	char dirty;
 } slave_led;
 
 /* Initializes a slave_led and returns a new object */
