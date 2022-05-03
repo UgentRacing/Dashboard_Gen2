@@ -22,7 +22,11 @@ unsigned long millis_start_sdc_ts_btn;
 char state_sdc_ts_btn;
 
 /* SDC SIGNALS */
-void check_sdc_input(
+void sdc_input_init(uint8_t pin){
+	/* Setup IO */
+	pinMode(pin, INPUT);
+}
+void sdc_input_check(
 	uint8_t pin,
 	uint8_t ind_led,
 	color_t ind_color
@@ -170,6 +174,10 @@ void setup() {
 	test_indicators();
 
 	/* Setup signals */
+	sdc_input_init(PIN_SDC_SDC);
+	sdc_input_init(PIN_SDC_ECU);
+	sdc_input_init(PIN_SDC_AMS);
+	sdc_input_init(PIN_SDC_IMD);
 	gpio_sdc_ts_btn_init();
 
 	/* Setup CAN */
@@ -182,10 +190,10 @@ void loop() {
 	can.events();
 
 	/* Check SDC inputs */
-	check_sdc_input(PIN_SDC_SDC, LED_SDC_SDC, COLOR_RED);
-	check_sdc_input(PIN_SDC_ECU, LED_SDC_ECU, COLOR_RED);
-	check_sdc_input(PIN_SDC_AMS, LED_SDC_AMS, COLOR_RED);
-	check_sdc_input(PIN_SDC_IMD, LED_SDC_IMD, COLOR_RED);
+	sdc_input_check(PIN_SDC_SDC, LED_SDC_SDC, COLOR_RED);
+	sdc_input_check(PIN_SDC_ECU, LED_SDC_ECU, COLOR_RED);
+	sdc_input_check(PIN_SDC_AMS, LED_SDC_AMS, COLOR_RED);
+	sdc_input_check(PIN_SDC_IMD, LED_SDC_IMD, COLOR_RED);
 
 	/* Check GPIO */
 	gpio_sdc_ts_btn_update();
