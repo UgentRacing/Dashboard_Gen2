@@ -41,7 +41,7 @@ void sdc_input_check(
 		ind_led,
 		state ? ind_color : COLOR_NONE
 	);
-	slave_led_show();
+	slave_led_show(sl_ind);
 }
 
 /* GPIO SIGNALS */
@@ -190,10 +190,10 @@ void loop() {
 	can.events();
 
 	/* Check SDC inputs */
-	sdc_input_check(PIN_SDC_SDC, LED_SDC_SDC, COLOR_RED);
-	sdc_input_check(PIN_SDC_ECU, LED_SDC_ECU, COLOR_RED);
-	sdc_input_check(PIN_SDC_AMS, LED_SDC_AMS, COLOR_RED);
-	sdc_input_check(PIN_SDC_IMD, LED_SDC_IMD, COLOR_RED);
+	sdc_input_check(PIN_SDC_SDC, LED_SDC_FAULT, COLOR_RED);
+	sdc_input_check(PIN_SDC_ECU, LED_ECU_FAULT, COLOR_RED);
+	sdc_input_check(PIN_SDC_AMS, LED_AMS_FAULT, COLOR_RED);
+	sdc_input_check(PIN_SDC_IMD, LED_IMD_FAULT, COLOR_RED);
 
 	/* Check GPIO */
 	gpio_sdc_ts_btn_update();
