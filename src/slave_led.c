@@ -44,12 +44,15 @@ void slave_led_free(slave_led* s){
 }
 
 void slave_led_reset(slave_led* s){
+	/* Reset state */
+	s->color_green = 0b0;
+	s->color_red = 0b0;
+
 	/* Low pulse on reset */
-	delay(1); /* 1ms */
 	digitalWrite(s->pin_reset, LOW);
-	delay(1); /* 1ms */
+	delayNanoseconds(100);
 	digitalWrite(s->pin_reset, HIGH);
-	delay(1); /* 1ms */
+	delayNanoseconds(100);
 }
 
 void slave_led_set(slave_led* s, uint8_t led, color_t c){
