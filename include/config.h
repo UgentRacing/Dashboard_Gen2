@@ -39,5 +39,6 @@
 
 /* MISC */
 #define SDC_THRES 930 /* Threshold below which SDC input signals are considered ACTIVE (3.3V = 1024) */
+#define SDC_TS_BTN_PULSE_MILLIS 1000 /* Time TS_BTN signal needs to be high after button hold to enable TS */
 
 #endif

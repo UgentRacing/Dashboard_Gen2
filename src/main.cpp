@@ -18,6 +18,61 @@ slave_led* sl_ind; /* Indicator Slave */
 slave_led* sl_ami; /* AMI Slave */
 FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> can;
 
+unsigned long millis_start_sdc_ts_btn;
+char state_sdc_ts_btn;
+
+/* SDC SIGNALS */
+void check_sdc_input(
+	uint8_t pin,
+	uint8_t ind_led,
+	color_t ind_color
+){
+	/* Read value */
+	uint16_t val = analogRead(pin);
+	char state = (val < SDC_THRES);
+
+	/* Change indicator LED */
+	slave_led_set(
+		sl_ind,
+		ind_led,
+		state ? ind_color : COLOR_NONE
+	);
+	slave_led_show();
+}
+
+/* GPIO SIGNALS */
+void gpio_sdc_ts_btn_init(){
+	/* Init the GPIO pin for the TS_BTN signal to SDC */
+	pinMode(PIN_SDC_TS_BTN, OUTPUT);
+	digitalWriteFast(PIN_SDC_TS_BTN, LOW);
+	
+	/* Init state */
+	state_sdc_ts_btn = 0b0;
+	millis_start_sdc_ts_btn = 0UL;
+}
+void gpio_sdc_ts_btn_update(){
+	/* Set correct output for TS_BTN signal */
+	if(state_sdc_ts_btn){
+		/* Check if needs to stop pulse */
+		if(millis() - millis_start_sdc_ts_btn > SDC_TS_BTN_PULSE_MILLIS){
+			/* Disable signal */
+			digitalWriteFast(PIN_SDC_TS_BTN, LOW);
+
+			/* Reset state */
+			state_sdc_ts_btn = 0;
+			millis_start_sdc_ts_btn = 0UL;
+		}
+	}
+}
+void gpio_sdc_ts_btn_pulse(){
+	/* Start pulse on TS_BTN signal to enable TS */
+	digitalWriteFast(PIN_SDC_TS_BTN, HIGH);
+
+	/* Set state for timeout */
+	state_sdc_ts_btn = 0b1;
+	millis_start_sdc_ts_btn = millis();
+}
+
 /* CALLBACKS */
 void on_rtd_press(){
 	dashboard_button_set_led(db_rtd, LED_ON);
@@ -36,25 +91,7 @@ void on_ts_release(){
 }
 void on_ts_hold(){
 	dashboard_button_set_led(db_ts, LED_STROBE);
-}
-
-/* INPUT CHECKS */
-void check_sdc_input(
-	uint8_t pin,
-	uint8_t ind_led,
-	color_t ind_color
-){
-	/* Read value */
-	uint16_t val = analogRead(pin);
-	char state = (val < SDC_THRES);
-
-	/* Change indicator LED */
-	slave_led_set(
-		sl_ind,
-		ind_led,
-		state ? ind_color : COLOR_NONE
-	);
-	slave_led_show();
+	gpio_sdc_ts_btn_pulse(); /* Activate TS */
 }
 
 /* INDICATORS */
@@ -133,6 +170,7 @@ void setup() {
 	test_indicators();
 
 	/* Setup signals */
+	gpio_sdc_ts_btn_init();
 
 	/* Setup CAN */
 	setup_can();
@@ -148,6 +186,9 @@ void loop() {
 	check_sdc_input(PIN_SDC_ECU, LED_SDC_ECU, COLOR_RED);
 	check_sdc_input(PIN_SDC_AMS, LED_SDC_AMS, COLOR_RED);
 	check_sdc_input(PIN_SDC_IMD, LED_SDC_IMD, COLOR_RED);
+
+	/* Check GPIO */
+	gpio_sdc_ts_btn_update();
 
 	/* Check buttons */
 	dashboard_button_update(db_rtd);
