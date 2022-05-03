@@ -76,6 +76,23 @@ void gpio_sdc_ts_btn_pulse(){
 	state_sdc_ts_btn = 0b1;
 	millis_start_sdc_ts_btn = millis();
 }
+void gpio_tsal_init(){
+	/* Init IO */
+	pinMode(PIN_TSAL, INPUT);
+}
+void gpio_tsal_update(){
+	/* Read value */
+	uint16_t val = analogRead(PIN_TSAL);
+	char state = (val > TSAL_THRES);
+
+	/* Update indicator */
+	slave_led_set(
+		sl_ind,
+		LED_TSAL_OFF,
+		state ? COLOR_NONE : COLOR_GREEN
+	);
+	slave_led_show(sl_ind);
+}
 
 /* CALLBACKS */
 void on_rtd_press(){
@@ -179,6 +196,7 @@ void setup() {
 	sdc_input_init(PIN_SDC_AMS);
 	sdc_input_init(PIN_SDC_IMD);
 	gpio_sdc_ts_btn_init();
+	gpio_tsal_init();
 
 	/* Setup CAN */
 	setup_can();
@@ -197,6 +215,7 @@ void loop() {
 
 	/* Check GPIO */
 	gpio_sdc_ts_btn_update();
+	gpio_tsal_update();
 
 	/* Check buttons */
 	dashboard_button_update(db_rtd);

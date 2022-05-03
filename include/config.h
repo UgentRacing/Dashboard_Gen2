@@ -24,9 +24,10 @@
 #define PIN_GPIO_3 10
 #define PIN_GPIO_4 11
 #define PIN_SDC_TS_BTN PIN_GPIO_1 /* Alias */
-#define PIN_BSPD_PRESSURE_1 PIN_GPIO_2 /* Alias */
-#define PIN_BSPD_PRESSURE_2 PIN_GPIO_3 /* Alias */
-#define PIN_BSPD_CURRENT PIN_GPIO_4 /* Alias */
+#define PIN_TSAL PIN_GPIO_2 /* Alias */
+//#define PIN_BSPD_PRESSURE_1 PIN_GPIO_2 /* Alias */
+//#define PIN_BSPD_PRESSURE_2 PIN_GPIO_3 /* Alias */
+//#define PIN_BSPD_CURRENT PIN_GPIO_4 /* Alias */
 
 /* CAN IDs */
 #define CAN_ID_RTD_PLAY_AUDIO 2
@@ -36,9 +37,11 @@
 #define LED_ECU_FAULT 1
 #define LED_AMS_FAULT 2
 #define LED_IMD_FAULT 3
+#define LED_TSAL_OFF 4
 
 /* MISC */
 #define SDC_THRES 930 /* Threshold below which SDC input signals are considered ACTIVE (3.3V = 1024) */
 #define SDC_TS_BTN_PULSE_MILLIS 1000 /* Time TS_BTN signal needs to be high after button hold to enable TS */
+#define TSAL_THRES 400 /* Threshold above which TSAL input signal is considered ACTIVE (3.3V = 1024) */
 
 #endif
