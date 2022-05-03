@@ -19,6 +19,18 @@ extern "C" {
 #define PIN_DB_RTD_LED 15
 #define PIN_DB_TS_IN 16
 #define PIN_DB_TS_LED 14
+#define PIN_SDC_SDC 18
+#define PIN_SDC_ECU 19
+#define PIN_SDC_AMS 20
+#define PIN_SDC_IMD 21
+#define PIN_GPIO_1 0
+#define PIN_GPIO_2 1
+#define PIN_GPIO_3 10
+#define PIN_GPIO_4 11
+#define PIN_SDC_TS_BTN PIN_GPIO_1 /* Alias */
+#define PIN_BSPD_PRESSURE_1 PIN_GPIO_2 /* Alias */
+#define PIN_BSPD_PRESSURE_2 PIN_GPIO_3 /* Alias */
+#define PIN_BSPD_CURRENT PIN_GPIO_4 /* Alias */
 
 /* CAN message IDs */
 #define CAN_ID_RTD_PLAY_AUDIO 2
@@ -124,6 +136,8 @@ void setup() {
 		PIN_SL_AMI_STORAGE_CLOCK
 	);
 	test_indicators();
+
+	/* Setup signals */
 
 	/* Setup CAN */
 	setup_can();
