@@ -59,10 +59,10 @@ void slave_led_set(slave_led* s, uint8_t led, color_t c){
 		s->color_green &= ~(0b1 << led);
 		return;
 	}
-	if(c == COLOR_RED || c == COLOR_RED_GREEN){
+	if(c == COLOR_RED || c == COLOR_YELLOW){
 		s->color_red |= 0b1 << led;
 	}
-	if(c == COLOR_GREEN || c == COLOR_RED_GREEN){
+	if(c == COLOR_GREEN || c == COLOR_YELLOW){
 		s->color_green |= 0b1 << led;
 	}
 }
@@ -73,10 +73,23 @@ void slave_led_show(slave_led* s){
 	digitalWrite(s->pin_storage_clock, LOW);
 	delay(1); /* 1ms */
 
-	/* Write data */
-	uint16_t data = (s->color_green << 8) | s->color_red;
-	char bit;
+	/* Setup bitstream */
+	uint16_t data = 0b0;
+	char data_green = s->color_green;
+	char data_red = s->color_red;
 	char i;
+	for(i=0; i<8; i++){
+		data = data << 1;
+		data |= data_green & 0b1;
+		data = data << 1;
+		data |= data_red & 0b1;
+
+		data_green = data_green >> 1;
+		data_red = data_red >> 1;
+	}
+
+	/* Write data */
+	char bit;
 	for(i=0; i<16; i++){
 		/* Get bit */
 		bit = data >> 15;

@@ -6,7 +6,7 @@ enum color {
 	COLOR_NONE,
 	COLOR_RED,
 	COLOR_GREEN,
-	COLOR_RED_GREEN
+	COLOR_YELLOW
 };
 typedef enum color color_t;
 
