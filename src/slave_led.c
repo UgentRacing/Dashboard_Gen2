@@ -59,45 +59,59 @@ void slave_led_set(slave_led* s, uint8_t led, color_t c){
 		s->color_green &= ~(0b1 << led);
 		return;
 	}
-	if(c == COLOR_RED || c == COLOR_RED_GREEN){
+	if(c == COLOR_RED || c == COLOR_YELLOW){
 		s->color_red |= 0b1 << led;
 	}
-	if(c == COLOR_GREEN || c == COLOR_RED_GREEN){
+	if(c == COLOR_GREEN || c == COLOR_YELLOW){
 		s->color_green |= 0b1 << led;
 	}
 }
 
 void slave_led_show(slave_led* s){
 	/* Pull clocks low */
-	digitalWrite(s->pin_data_clock, LOW);
-	digitalWrite(s->pin_storage_clock, LOW);
-	delay(1); /* 1ms */
+	digitalWriteFast(s->pin_data_clock, LOW);
+	digitalWriteFast(s->pin_storage_clock, LOW);
+	delayNanoseconds(25); /* Wait time pulse low - Setup time */
+
+	/* Setup bitstream */
+	uint16_t data = 0b0;
+	char data_green = s->color_green;
+	char data_red = s->color_red;
+	char i;
+	for(i=0; i<8; i++){
+		data = data << 1;
+		data |= data_green & 0b1;
+		data = data << 1;
+		data |= data_red & 0b1;
+
+		data_green = data_green >> 1;
+		data_red = data_red >> 1;
+	}
 
 	/* Write data */
-	uint16_t data = (s->color_green << 8) | s->color_red;
 	char bit;
-	char i;
 	for(i=0; i<16; i++){
 		/* Get bit */
 		bit = data >> 15;
 		data = data << 1;
 
 		/* Write bit */
-		digitalWrite(s->pin_data, bit);
-		delay(1); /* 1ms */
+		digitalWriteFast(s->pin_data, bit);
+		delayNanoseconds(25); /* Setup time */
 
 		/* Rising clock stores data */
-		digitalWrite(s->pin_data_clock, HIGH);
-		delay(1); /* 1ms */
-		digitalWrite(s->pin_data_clock, LOW);
-		delay(1); /* 1ms */
+		digitalWriteFast(s->pin_data_clock, HIGH);
+		delayNanoseconds(50); /* Wait time pulse high */
+		digitalWriteFast(s->pin_data_clock, LOW);
+		delayNanoseconds(25); /* Wait time pulse low - Setup time */
 	}
-	digitalWrite(s->pin_data, LOW);
+	digitalWriteFast(s->pin_data, LOW);
+	delayNanoseconds(25); /* Setup time */
 
 	/* Pulse storage clock */
-	delay(1); /* 1ms */
-	digitalWrite(s->pin_storage_clock, HIGH);
-	delay(1); /* 1ms */
-	digitalWrite(s->pin_storage_clock, LOW);
+	digitalWriteFast(s->pin_storage_clock, HIGH);
+	delayNanoseconds(50); /* Wait time pulse high */
+	digitalWriteFast(s->pin_storage_clock, LOW);
+	delayNanoseconds(50); /* Wait time pulse low */
 }
 
