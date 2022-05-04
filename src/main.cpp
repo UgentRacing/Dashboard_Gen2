@@ -29,7 +29,8 @@ void sdc_input_init(uint8_t pin){
 void sdc_input_check(
 	uint8_t pin,
 	uint8_t ind_led,
-	color_t ind_color
+	color_t ind_color_fault,
+	color_t ind_color_normal
 ){
 	/* Read value */
 	uint16_t val = analogRead(pin);
@@ -39,7 +40,7 @@ void sdc_input_check(
 	slave_led_set(
 		sl_ind,
 		ind_led,
-		state ? ind_color : COLOR_NONE
+		state ? ind_color_fault : ind_color_normal
 	);
 	slave_led_show(sl_ind);
 }
@@ -208,10 +209,10 @@ void loop() {
 	can.events();
 
 	/* Check SDC inputs */
-	sdc_input_check(PIN_SDC_SDC, LED_SDC_FAULT, COLOR_RED);
-	sdc_input_check(PIN_SDC_ECU, LED_ECU_FAULT, COLOR_RED);
-	sdc_input_check(PIN_SDC_AMS, LED_AMS_FAULT, COLOR_RED);
-	sdc_input_check(PIN_SDC_IMD, LED_IMD_FAULT, COLOR_RED);
+	sdc_input_check(PIN_SDC_SDC, LED_SDC_FAULT, COLOR_RED, COLOR_GREEN);
+	sdc_input_check(PIN_SDC_ECU, LED_ECU_FAULT, COLOR_RED, COLOR_GREEN);
+	sdc_input_check(PIN_SDC_AMS, LED_AMS_FAULT, COLOR_RED, COLOR_NONE);
+	sdc_input_check(PIN_SDC_IMD, LED_IMD_FAULT, COLOR_RED, COLOR_NONE);
 
 	/* Check GPIO */
 	gpio_sdc_ts_btn_update();
