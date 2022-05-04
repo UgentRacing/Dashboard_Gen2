@@ -63,16 +63,13 @@ void slave_led_set(slave_led* s, uint8_t led, color_t c){
 	char old_red = s->color_red;
 
 	/* Update internal state */
-	if(c == COLOR_NONE){
-		s->color_red &= ~(0b1 << led);
-		s->color_green &= ~(0b1 << led);
-	}else{
-		if(c == COLOR_RED || c == COLOR_YELLOW){
-			s->color_red |= 0b1 << led;
-		}
-		if(c == COLOR_GREEN || c == COLOR_YELLOW){
-			s->color_green |= 0b1 << led;
-		}
+	s->color_red &= ~(0b1 << led);
+	s->color_green &= ~(0b1 << led);
+	if(c == COLOR_RED || c == COLOR_YELLOW){
+		s->color_red |= 0b1 << led;
+	}
+	if(c == COLOR_GREEN || c == COLOR_YELLOW){
+		s->color_green |= 0b1 << led;
 	}
 
 	/* Check if changed */
@@ -92,8 +89,8 @@ void slave_led_show(slave_led* s){
 
 	/* Setup bitstream */
 	uint16_t data = 0b0;
-	char data_green = s->color_green;
-	char data_red = s->color_red;
+	char data_green = ~(s->color_green);
+	char data_red = ~(s->color_red);
 	char i;
 	for(i=0; i<8; i++){
 		data = data << 1;
