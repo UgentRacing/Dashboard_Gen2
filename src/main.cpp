@@ -18,10 +18,14 @@ slave_led* sl_ind; /* Indicator Slave */
 slave_led* sl_ami; /* AMI Slave */
 FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> can;
 
-unsigned long millis_start_sdc_ts_btn;
-char state_sdc_ts_btn;
 unsigned long millis_start_indicator_flash;
 char state_indicator_flash;
+
+unsigned long millis_last_ts_ecu_message;
+char state_ts = 0b0; /* 0b0 if TS is off, 0b1 if TS is on */
+char state_rtd = 0b0; /* 0b0 if RTD is off, 0b1 if RTD is on */
+
+unsigned long millis_bspd_last_message;
 
 /* SDC SIGNALS */
 void sdc_input_init(uint8_t pin){
@@ -48,36 +52,25 @@ void sdc_input_check(
 }
 
 /* GPIO SIGNALS */
-void gpio_sdc_ts_btn_init(){
-	/* Init the GPIO pin for the TS_BTN signal to SDC */
-	pinMode(PIN_SDC_TS_BTN, OUTPUT);
-	digitalWriteFast(PIN_SDC_TS_BTN, LOW);
+void gpio_sdc_ts_init(){
+	/* Init the GPIO pin for the TS_BTN signal from SDC */
+	pinMode(PIN_SDC_TS, INPUT);
 	
 	/* Init state */
-	state_sdc_ts_btn = 0b0;
-	millis_start_sdc_ts_btn = 0UL;
+	state_ts = 0b0;
+	millis_last_ts_ecu_message = 0UL;
 }
-void gpio_sdc_ts_btn_update(){
-	/* Set correct output for TS_BTN signal */
-	if(state_sdc_ts_btn){
-		/* Check if needs to stop pulse */
-		if(millis() - millis_start_sdc_ts_btn > SDC_TS_BTN_PULSE_MILLIS){
-			/* Disable signal */
-			digitalWriteFast(PIN_SDC_TS_BTN, LOW);
+void state_ts_update(){
+	/* Check if TS is enabled */
+	char state_ts_sdc = (analogRead(PIN_SDC_TS) < SDC_THRES) ? 0b1 : 0b0;
+	char state_ts_ecu = (millis() - millis_last_ts_ecu_message < STATE_TS_ECU_TIMEOUT) ? 0b1 : 0b0;
+	state_ts = state_ts_sdc & state_ts_ecu;
 
-			/* Reset state */
-			state_sdc_ts_btn = 0;
-			millis_start_sdc_ts_btn = 0UL;
-		}
-	}
-}
-void gpio_sdc_ts_btn_pulse(){
-	/* Start pulse on TS_BTN signal to enable TS */
-	digitalWriteFast(PIN_SDC_TS_BTN, HIGH);
-
-	/* Set state for timeout */
-	state_sdc_ts_btn = 0b1;
-	millis_start_sdc_ts_btn = millis();
+	/* Update button LEDs */
+	led_state_t l_rtd = state_ts ? (state_rtd ? LED_OFF : LED_BLINK) : LED_OFF;
+	led_state_t l_ts = state_ts ? LED_OFF : LED_BLINK;
+	dashboard_button_set_led(db_rtd, l_rtd);
+	dashboard_button_set_led(db_ts, l_ts);
 }
 void gpio_tsal_init(){
 	/* Init IO */
@@ -106,6 +99,15 @@ void on_rtd_release(){
 }
 void on_rtd_hold(){
 	dashboard_button_set_led(db_rtd, LED_STROBE);
+
+	/* Send RTD button pressed */
+	if(state_ts && !state_rtd){
+		/* Construct CAN message */
+		CAN_message_t m;
+		m.id = CAN_ID_RTD_BUTTON_PRESSED;
+		m.buf[0] = 0x01;
+		can.write(m);
+	}
 }
 void on_ts_press(){
 	dashboard_button_set_led(db_ts, LED_ON);
@@ -115,7 +117,6 @@ void on_ts_release(){
 }
 void on_ts_hold(){
 	dashboard_button_set_led(db_ts, LED_STROBE);
-	gpio_sdc_ts_btn_pulse(); /* Activate TS */
 }
 
 /* INDICATORS */
@@ -168,10 +169,56 @@ void indicators_flash_update(){
 	digitalWriteFast(sl_ind->pin_output_enable, s);
 }
 
+/* BSPD */
+void bspd_init(){
+	/* Init IO */
+	pinMode(PIN_BSPD_PRESSURE_1, INPUT);
+	pinMode(PIN_BSPD_PRESSURE_2, INPUT);
+	pinMode(PIN_BSPD_CURRENT, INPUT);
+
+	/* Init state */
+	millis_bspd_last_message = 0UL;
+}
+void bspd_update(){
+	/* Check if time to send */
+	if(millis() - millis_bspd_last_message > BSPD_CAN_UPDATE_TIME){
+		/* Read values */
+		uint8_t bspd_p1 = analogRead(PIN_BSPD_PRESSURE_1);
+		uint8_t bspd_p2 = analogRead(PIN_BSPD_PRESSURE_2);
+		uint8_t bspd_c = analogRead(PIN_BSPD_CURRENT);
+
+		/* Send CAN message */
+		CAN_message_t m;
+		m.id = CAN_ID_BSPD_STATS;
+		m.buf[0] = bspd_p1;
+		m.buf[1] = bspd_p2;
+		m.buf[2] = bspd_c;
+		can.write(m);
+
+		/* Update state */
+		millis_bspd_last_message = millis();
+	}
+}
+
 
 /* CAN */
-void on_can_receive(const CAN_message_t &msg){
-
+void on_can_receive(const CAN_message_t& m){
+	switch(m.id){
+		case CAN_ID_ECU_TS_STATE:
+			/* Update TS state */
+			if(m.buf[0] == 0x01){
+				millis_last_ts_ecu_message = millis();
+			}else{
+				millis_last_ts_ecu_message = 0UL;
+			}
+			break;
+		case CAN_ID_RTD_BUTTON_PRESSED:
+			/* Update RTD state */
+			if(m.buf[2] == 0x01){
+				state_rtd = 0b1;
+			}
+			break;
+	}
 }
 
 void setup_can(){
@@ -179,7 +226,6 @@ void setup_can(){
 	can.setBaudRate(1000000);
 	can.setMaxMB(16);
 	can.enableFIFO();
-	can.enableFIFOInterrupt();
 	can.onReceive(on_can_receive);
 }
 
@@ -228,11 +274,13 @@ void setup() {
 	sdc_input_init(PIN_SDC_ECU);
 	sdc_input_init(PIN_SDC_AMS);
 	sdc_input_init(PIN_SDC_IMD);
-	gpio_sdc_ts_btn_init();
+	gpio_sdc_ts_init();
 	gpio_tsal_init();
+	bspd_init();
 
 	/* Setup CAN */
 	setup_can();
+
 }
 
 /* LOOP */
@@ -247,7 +295,7 @@ void loop() {
 	sdc_input_check(PIN_SDC_IMD, LED_IMD_FAULT, COLOR_RED, COLOR_NONE);
 
 	/* Check GPIO */
-	gpio_sdc_ts_btn_update();
+	state_ts_update();
 	gpio_tsal_update();
 
 	/* Check buttons */
@@ -256,5 +304,8 @@ void loop() {
 
 	/* Update indicators */
 	indicators_flash_update();
+
+	/* Update BSPD */
+	bspd_update();
 }
 
