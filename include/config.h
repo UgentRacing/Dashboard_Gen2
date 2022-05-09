@@ -43,5 +43,7 @@
 #define SDC_THRES 930 /* Threshold below which SDC input signals are considered ACTIVE (3.3V = 1024) */
 #define SDC_TS_BTN_PULSE_MILLIS 1000 /* Time TS_BTN signal needs to be high after button hold to enable TS */
 #define TSAL_THRES 400 /* Threshold above which TSAL input signal is considered ACTIVE (3.3V = 1024) */
+#define IND_FLASH_NUM 4 /* Number of times the indicator LEDs flash when warning is triggered */
+#define IND_FLASH_DELAY 50 /* Delay between flashes of the indicator LEDs flash when warning is triggered */
 
 #endif

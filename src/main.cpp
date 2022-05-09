@@ -20,6 +20,8 @@ FlexCAN_T4<CAN1, RX_SIZE_256, TX_SIZE_16> can;
 
 unsigned long millis_start_sdc_ts_btn;
 char state_sdc_ts_btn;
+unsigned long millis_start_indicator_flash;
+char state_indicator_flash;
 
 /* SDC SIGNALS */
 void sdc_input_init(uint8_t pin){
@@ -136,6 +138,35 @@ void test_indicators(){ /* Enable all LEDs to check if they work */
 		delay(1000);
 	}
 }
+void indicators_flash_init(){
+	/* Set state */
+	millis_start_indicator_flash = 0UL;
+	state_indicator_flash = 0b0;
+}
+void indicators_flash_start(){
+	/* Set state */
+	millis_start_indicator_flash = millis();
+	state_indicator_flash = 0b1;
+}
+void indicators_flash_update(){
+	if(!state_indicator_flash) return;
+
+	/* Check if still needs to flash */
+	uint16_t delta = millis() - millis_start_indicator_flash;
+	if(delta > IND_FLASH_NUM * IND_FLASH_DELAY * 2){
+		/* Reset state */
+		millis_start_indicator_flash = 0UL;
+		state_indicator_flash = 0b0;
+
+		/* Reset output */
+		digitalWriteFast(sl_ind->pin_output_enable, LOW);
+		return;
+	}
+
+	/* Calculate state */
+	char s = (delta % (IND_FLASH_DELAY * 2)) < IND_FLASH_DELAY ? 0b1 : 0b0;
+	digitalWriteFast(sl_ind->pin_output_enable, s);
+}
 
 
 /* CAN */
@@ -190,6 +221,7 @@ void setup() {
 		PIN_SL_AMI_STORAGE_CLOCK
 	);
 	test_indicators();
+	indicators_flash_init();
 
 	/* Setup signals */
 	sdc_input_init(PIN_SDC_SDC);
@@ -221,5 +253,8 @@ void loop() {
 	/* Check buttons */
 	dashboard_button_update(db_rtd);
 	dashboard_button_update(db_ts);
+
+	/* Update indicators */
+	indicators_flash_update();
 }
 
