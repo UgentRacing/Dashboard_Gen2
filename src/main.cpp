@@ -62,7 +62,7 @@ void gpio_sdc_ts_init(){
 }
 void state_ts_update(){
 	/* Check if TS is enabled */
-	char state_ts_sdc = (analogRead(PIN_SDC_TS) < SDC_THRES) ? 0b1 : 0b0;
+	char state_ts_sdc = (digitalRead(PIN_SDC_TS)) ? 0b0 : 0b1;
 	char state_ts_ecu = (millis() - millis_last_ts_ecu_message < STATE_TS_ECU_TIMEOUT) ? 0b1 : 0b0;
 	state_ts = state_ts_sdc & state_ts_ecu;
 
@@ -78,8 +78,7 @@ void gpio_tsal_init(){
 }
 void gpio_tsal_update(){
 	/* Read value */
-	uint16_t val = analogRead(PIN_TSAL);
-	char state = (val > TSAL_THRES);
+	char state = digitalRead(PIN_TSAL);
 
 	/* Update indicator */
 	slave_led_set(
@@ -122,7 +121,17 @@ void on_ts_hold(){
 /* INDICATORS */
 void test_indicators(){ /* Enable all LEDs to check if they work */
 	uint8_t i, j;
-	color_t colors[3] = {COLOR_RED, COLOR_GREEN, COLOR_YELLOW};
+	color_t colors[4] = {COLOR_RED, COLOR_GREEN, COLOR_YELLOW};
+
+	dashboard_button_set_led(db_ts,LED_ON);
+	dashboard_button_set_led(db_rtd,LED_ON);
+	dashboard_button_update(db_ts);
+	dashboard_button_update(db_rtd);
+	delay(1000);
+	dashboard_button_set_led(db_ts,LED_OFF);
+	dashboard_button_set_led(db_rtd,LED_OFF);
+	dashboard_button_update(db_ts);
+	dashboard_button_update(db_rtd);
 
 	/* Reset registers */
 	slave_led_reset(sl_ind);
