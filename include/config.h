@@ -42,7 +42,6 @@
 #define LED_AMS_FAULT 2
 #define LED_IMD_FAULT 3
 #define LED_TSAL_OFF  4
-#define LED_TS_ON     5
 
 /* MISC */
 #define SDC_THRES               930  /* Threshold below which SDC input signals are considered ACTIVE (3.3V = 1024) */

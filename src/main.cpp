@@ -39,8 +39,7 @@ void sdc_input_check(
 	color_t ind_color_normal
 ){
 	/* Read value */
-	uint16_t val = analogRead(pin);
-	char state = (val < SDC_THRES); /* Active low */
+	char state = !digitalRead(pin); /* Active low */
 
 	/* Change indicator LED */
 	slave_led_set(
@@ -67,8 +66,8 @@ void state_ts_update(){
 	state_ts = state_ts_sdc & state_ts_ecu; /* Both signals need to be active for safety */
 
 	/* Update button LEDs */
-	led_state_t l_rtd = state_ts ? (state_rtd ? LED_OFF : LED_BLINK) : LED_OFF;
-	led_state_t l_ts = state_ts ? LED_OFF : LED_BLINK;
+	led_state_t l_rtd = state_ts ? (state_rtd ? LED_BLINK : LED_ON) : LED_OFF;
+	led_state_t l_ts = state_ts ? LED_BLINK : LED_ON;
 	dashboard_button_set_led(db_rtd, l_rtd);
 	dashboard_button_set_led(db_ts, l_ts);
 }
@@ -90,15 +89,9 @@ void gpio_tsal_update(){
 }
 
 /* CALLBACKS */
-void on_rtd_press(){
-	dashboard_button_set_led(db_rtd, LED_ON);
-}
-void on_rtd_release(){
-	dashboard_button_set_led(db_rtd, LED_OFF);
-}
+void on_rtd_press(){}   /* Not used, LED state set elsewhere */
+void on_rtd_release(){} /* Not used, LED state set elsewhere */
 void on_rtd_hold(){
-	dashboard_button_set_led(db_rtd, LED_STROBE);
-
 	/* Send RTD button pressed */
 	if(state_ts && !state_rtd){
 		/* Construct CAN message */

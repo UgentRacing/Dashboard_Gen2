@@ -99,3 +99,7 @@ void dashboard_button_update(dashboard_button* db){
 		}
 	}
 }
+
+char dashboard_button_is_pressed(dashboard_button* db){
+	return digitalRead(db->pin_input);
+}

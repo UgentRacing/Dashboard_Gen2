@@ -49,4 +49,7 @@ void dashboard_button_set_led(dashboard_button* db, led_state_t ls);
 /* Checks if input changed & Update LED output */
 void dashboard_button_update(dashboard_button* db);
 
+/* Get state of button */
+char dashboard_button_is_pressed(dashboard_button* db);
+
 #endif
