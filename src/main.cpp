@@ -40,7 +40,7 @@ void sdc_input_check(
 ){
 	/* Read value */
 	uint16_t val = analogRead(pin);
-	char state = (val < SDC_THRES);
+	char state = (val < SDC_THRES); /* Active low */
 
 	/* Change indicator LED */
 	slave_led_set(
@@ -62,9 +62,9 @@ void gpio_sdc_ts_init(){
 }
 void state_ts_update(){
 	/* Check if TS is enabled */
-	char state_ts_sdc = (analogRead(PIN_SDC_TS) < SDC_THRES) ? 0b1 : 0b0;
-	char state_ts_ecu = (millis() - millis_last_ts_ecu_message < STATE_TS_ECU_TIMEOUT) ? 0b1 : 0b0;
-	state_ts = state_ts_sdc & state_ts_ecu;
+	char state_ts_sdc = (analogRead(PIN_SDC_TS) < SDC_THRES) ? 0b1 : 0b0; /* Read signal from SDC */
+	char state_ts_ecu = (millis() - millis_last_ts_ecu_message < STATE_TS_ECU_TIMEOUT) ? 0b1 : 0b0; /* Check time since last CAN state update */
+	state_ts = state_ts_sdc & state_ts_ecu; /* Both signals need to be active for safety */
 
 	/* Update button LEDs */
 	led_state_t l_rtd = state_ts ? (state_rtd ? LED_OFF : LED_BLINK) : LED_OFF;
@@ -295,8 +295,8 @@ void loop() {
 	sdc_input_check(PIN_SDC_IMD, LED_IMD_FAULT, COLOR_RED, COLOR_NONE);
 
 	/* Check GPIO */
-	state_ts_update();
-	gpio_tsal_update();
+	state_ts_update();  /* Checks if TS is still enabled */
+	gpio_tsal_update(); /* Checks TSAL status */
 
 	/* Check buttons */
 	dashboard_button_update(db_rtd);
