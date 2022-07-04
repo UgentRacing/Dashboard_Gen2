@@ -26,6 +26,7 @@ char state_ts = 0b0; /* 0b0 if TS is off, 0b1 if TS is on */
 char state_rtd = 0b0; /* 0b0 if RTD is off, 0b1 if RTD is on */
 
 unsigned long millis_bspd_last_message;
+unsigned long millis_last_can_message;
 
 /* SDC SIGNALS */
 void sdc_input_init(uint8_t pin){
@@ -165,6 +166,17 @@ void indicators_flash_update(){
 	char s = (delta % (IND_FLASH_DELAY * 2)) < IND_FLASH_DELAY ? 0b1 : 0b0;
 	digitalWriteFast(sl_ind->pin_output_enable, s);
 }
+void ind_can_update(){
+	char state = (millis_last_can_message < CAN_ACTIVE_TIMEOUT);
+
+	/* Update indicator */
+	slave_led_set(
+		sl_ind,
+		LED_CAN_INACTIVE,
+		state ? COLOR_NONE : COLOR_YELLOW
+	);
+	slave_led_show(sl_ind);
+}
 
 /* BSPD */
 void bspd_init(){
@@ -216,14 +228,20 @@ void on_can_receive(const CAN_message_t& m){
 			}
 			break;
 	}
-}
 
+	/* Update CAN state */
+	millis_last_can_message = millis();
+}
 void setup_can(){
+	/* Init FlexCAN lib */
 	can.begin();
 	can.setBaudRate(1000000);
 	can.setMaxMB(16);
 	can.enableFIFO();
 	can.onReceive(on_can_receive);
+
+	/* Init CAN state */
+	millis_last_can_message = 0UL;
 }
 
 /* SETUP */
@@ -300,6 +318,7 @@ void loop() {
 	dashboard_button_update(db_ts);
 
 	/* Update indicators */
+	ind_can_update(); /* Updates CAN active indicator */
 	indicators_flash_update();
 
 	/* Update BSPD */

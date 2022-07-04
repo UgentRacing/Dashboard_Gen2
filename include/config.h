@@ -37,11 +37,12 @@
 #define CAN_ID_BSPD_STATS         0x06
 
 /* INDICATORS */
-#define LED_SDC_FAULT 0
-#define LED_ECU_FAULT 1
-#define LED_AMS_FAULT 2
-#define LED_IMD_FAULT 3
-#define LED_TSAL_OFF  4
+#define LED_SDC_FAULT    0
+#define LED_ECU_FAULT    1
+#define LED_AMS_FAULT    2
+#define LED_IMD_FAULT    3
+#define LED_TSAL_OFF     4
+#define LED_CAN_INACTIVE 5
 
 /* MISC */
 #define SDC_THRES               930  /* Threshold below which SDC input signals are considered ACTIVE (3.3V = 1024) */
@@ -51,5 +52,6 @@
 #define IND_FLASH_DELAY         50   /* Delay between flashes of the indicator LEDs flash when warning is triggered */
 #define STATE_TS_ECU_TIMEOUT    500  /* Millis after an ECU can TS on message that is will go back to TS off */
 #define BSPD_CAN_UPDATE_TIME    100  /* Millis between sending the BSPD stats over CAN */
+#define CAN_ACTIVE_TIMEOUT      100  /* Millis after last CAN message when it will be seen as inactive */
 
 #endif
