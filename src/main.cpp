@@ -108,21 +108,16 @@ void on_rtd_hold(){
 		can.write(m);
 	}
 }
-void on_ts_press(){
-	dashboard_button_set_led(db_ts, LED_ON);
-}
-void on_ts_release(){
-	dashboard_button_set_led(db_ts, LED_BREATHE);
-}
-void on_ts_hold(){
-	dashboard_button_set_led(db_ts, LED_STROBE);
-}
+void on_ts_press(){}   /* TS button connected to SDC */
+void on_ts_release(){} /* TS button connected to SDC */
+void on_ts_hold(){}    /* TS button connected to SDC */
 
 /* INDICATORS */
 void test_indicators(){ /* Enable all LEDs to check if they work */
 	uint8_t i, j;
 	color_t colors[4] = {COLOR_RED, COLOR_GREEN, COLOR_YELLOW};
 
+	/* Test button LEDs */
 	dashboard_button_set_led(db_ts,LED_ON);
 	dashboard_button_set_led(db_rtd,LED_ON);
 	dashboard_button_update(db_ts);
