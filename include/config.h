@@ -25,10 +25,10 @@
 #define PIN_SDC_ECU              PIN_GPIO_3 /* Alias */
 #define PIN_SDC_AMS              PIN_GPIO_4 /* Alias */
 #define PIN_SDC_IMD              PIN_GPIO_5 /* Alias */
-#define PIN_BSPD_PRESSURE_1      18
-#define PIN_BSPD_PRESSURE_2      19
-#define PIN_BSPD_CURRENT         20
-#define PIN_TSAL                 21
+#define PIN_BSPD_PRESSURE_1      19         /* Label: SDC BSPD */
+#define PIN_BSPD_PRESSURE_2      20         /* Label: SDC AMS */
+#define PIN_BSPD_CURRENT         21         /* Label: SDC IMD */
+#define PIN_TSAL                 18         /* Label: SDC AS */
 
 /* CAN IDs */
 #define CAN_ID_RTD_PLAY_AUDIO     0x03

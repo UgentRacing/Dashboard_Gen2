@@ -192,9 +192,10 @@ void bspd_update(){
 	/* Check if time to send */
 	if(millis() - millis_bspd_last_message > BSPD_CAN_UPDATE_TIME){
 		/* Read values */
-		uint8_t bspd_p1 = analogRead(PIN_BSPD_PRESSURE_1);
-		uint8_t bspd_p2 = analogRead(PIN_BSPD_PRESSURE_2);
-		uint8_t bspd_c = analogRead(PIN_BSPD_CURRENT);
+		/* TODO: check if correct values, maybe does not need bitshift (ADC resolution 10 bits) */
+		uint8_t bspd_p1 = (analogRead(PIN_BSPD_PRESSURE_1) >> 2);
+		uint8_t bspd_p2 = (analogRead(PIN_BSPD_PRESSURE_2) >> 2);
+		uint8_t bspd_c = (analogRead(PIN_BSPD_CURRENT) >> 2);
 
 		/* Send CAN message */
 		CAN_message_t m;
