@@ -27,6 +27,7 @@ char state_rtd = 0b0; /* 0b0 if RTD is off, 0b1 if RTD is on */
 
 unsigned long millis_bspd_last_message;
 unsigned long millis_last_can_message;
+uint32_t lastHeartBeat = 0;
 
 /* SDC SIGNALS */
 void sdc_input_init(uint8_t pin){
@@ -324,5 +325,14 @@ void loop() {
 
 	/* Update BSPD */
 	bspd_update();
+
+	//heartbeat
+  if(millis()-lastHeartBeat > HEARTBEAT_TIME) {
+    CAN_message_t message;
+    message.id = CAN_ID_HEARTBEAT;
+    message.buf[0] = HEARTBEAT_ID;
+    can.write(message);
+    lastHeartBeat = millis();
+  }
 }
 

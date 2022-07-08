@@ -35,6 +35,7 @@
 #define CAN_ID_RTD_BUTTON_PRESSED 0x03
 #define CAN_ID_ECU_TS_STATE       0x01
 #define CAN_ID_BSPD_STATS         0x06
+#define CAN_ID_HEARTBEAT          0x07
 
 /* INDICATORS */
 #define LED_SDC_FAULT    0
@@ -53,5 +54,7 @@
 #define STATE_TS_ECU_TIMEOUT    500  /* Millis after an ECU can TS on message that is will go back to TS off */
 #define BSPD_CAN_UPDATE_TIME    100  /* Millis between sending the BSPD stats over CAN */
 #define CAN_ACTIVE_TIMEOUT      100  /* Millis after last CAN message when it will be seen as inactive */
+#define HEARTBEAT_TIME          50   /* Millis between sending heartbeat */
+#define HEARTBEAT_ID            1    /* Heartbeat ID of dashboard */
 
 #endif
