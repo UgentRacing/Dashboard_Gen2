@@ -327,12 +327,12 @@ void loop() {
 	bspd_update();
 
 	//heartbeat
-  if(millis()-lastHeartBeat > HEARTBEAT_TIME) {
-    CAN_message_t message;
-    message.id = CAN_ID_HEARTBEAT;
-    message.buf[0] = HEARTBEAT_ID;
-    can.write(message);
-    lastHeartBeat = millis();
-  }
+	if(millis()-lastHeartBeat > HEARTBEAT_TIME) {
+		CAN_message_t message;
+		message.id = CAN_ID_HEARTBEAT;
+		message.buf[0] = HEARTBEAT_ID;
+		can.write(message);
+		lastHeartBeat = millis();
+	}
 }
 
