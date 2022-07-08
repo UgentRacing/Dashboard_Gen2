@@ -54,7 +54,7 @@
 #define STATE_TS_ECU_TIMEOUT    500  /* Millis after an ECU can TS on message that is will go back to TS off */
 #define BSPD_CAN_UPDATE_TIME    100  /* Millis between sending the BSPD stats over CAN */
 #define CAN_ACTIVE_TIMEOUT      100  /* Millis after last CAN message when it will be seen as inactive */
-#define HEARTBEAT_TIME          50   /* Millis between sending heartbeat */
-#define HEARTBEAT_ID            1    /* Heartbeat ID of dashboard */
+#define CAN_HEARTBEAT_PERIOD    50   /* Millis between CAN heartbeat messages */
+#define CAN_HEARTBEAT_PAYLOAD   1    /* Heartbeat ID of dashboard */
 
 #endif
